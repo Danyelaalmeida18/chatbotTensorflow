@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chatbot com TensorFlow.js</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #chat { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: auto; }
+    .message { margin: 5px 0; }
+    .user { color: blue; }
+    .bot { color: green; }
+    #input { margin-top: 10px; display: flex; }
+    #input input { flex: 1; padding: 5px; }
+    #input button { padding: 5px 10px; }
+  </style>
+</head>
+<body>
+  <h1>Chatbot</h1>
+  <h3>Interaja com o chatbot digitando mensagens como:</h4>
+  <p>"olá"</p>
+  <p>"como você está?"</p>
+  <p>"estou bem"</p>
+  <p>"adeus"</p>
+
+  <div id="chat"></div>
+  <div id="input">
+    <input type="text" id="userInput" placeholder="Digite sua mensagem...">
+    <button onclick="sendMessage()">Enviar</button>
+  </div>
+
+  <script>
+    // Inicializa o modelo simples com TensorFlow.js
+    async function createModel() {
+      const model = tf.sequential();
+      model.add(tf.layers.dense({ units: 10, activation: 'relu', inputShape: [1] }));
+      model.add(tf.layers.dense({ units: 1, activation: 'sigmoid' }));
+      model.compile({ optimizer: 'sgd', loss: 'meanSquaredError' });
+      return model;
+    }
+
+    // Simulação de lógica básica de chatbot
+    function chatbotResponse(message) {
+      const responses = {
+        "olá": "Oi! Como posso ajudar você?",
+        "como você está?": "Eu sou um bot, então sempre estou bem! E você?",
+        "estou bem": "Fico feliz, por você!",
+        "adeus": "Tchau! Foi bom conversar com você.",
+      };
+      const lowerMessage = message.toLowerCase();
+      return responses[lowerMessage] || "Desculpe, não entendi. Pode reformular?";
+    }
+
+    // Função para enviar mensagens
+    function sendMessage() {
+      const inputField = document.getElementById('userInput');
+      const userMessage = inputField.value.trim();
+      if (!userMessage) return;
+
+      addMessageToChat("user", userMessage);
+
+      // Resposta do chatbot
+      const botMessage = chatbotResponse(userMessage);
+      setTimeout(() => addMessageToChat("bot", botMessage), 500);
+
+      inputField.value = "";
+    }
+
+    // Função para adicionar mensagens no chat
+    function addMessageToChat(sender, message) {
+      const chat = document.getElementById('chat');
+      const messageElement = document.createElement('div');
+      messageElement.className = `message ${sender}`;
+      messageElement.innerText = `${sender === "user" ? "Você" : "Bot"}: ${message}`;
+      chat.appendChild(messageElement);
+      chat.scrollTop = chat.scrollHeight; // Mantém o scroll no final
+    }
+
+    // Inicializa o modelo
+    createModel().then(model => {
+      console.log("Modelo TensorFlow.js carregado com sucesso.");
+    });
+  </script>
+</body>
+</html>
